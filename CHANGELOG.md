@@ -12,7 +12,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
-- Don't convert `namedtuple` to `tuple` ([1589](https://github.com/PyTorchLightning/pytorch-lightning/pull/1589))
+- Don't convert `namedtuple` to `tuple` ([#1589](https://github.com/PyTorchLightning/pytorch-lightning/pull/1589))
+
+- Changed lightning module params to dict when loading ([#1639](https://github.com/PyTorchLightning/pytorch-lightning/pull/1639))
 
 ### Deprecated
 
@@ -21,7 +23,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 ### Fixed
 
 - Fixed broken link in PR template ([#1675](https://github.com/PyTorchLightning/pytorch-lightning/pull/1675))
+
 - Fixed ModelCheckpoint not None checking filepath ([#1654](https://github.com/PyTorchLightning/pytorch-lightning/pull/1654))
+
 - Trainer now calls `on_load_checkpoint()` when resuming from a checkpoint ([#1666](https://github.com/PyTorchLightning/pytorch-lightning/pull/1666))
 
 
