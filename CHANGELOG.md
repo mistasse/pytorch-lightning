@@ -16,6 +16,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 - Changed lightning module params to dict when loading ([#1639](https://github.com/PyTorchLightning/pytorch-lightning/pull/1639))
 
+- Complete test for batch size < num gpus ([#1705](https://github.com/PyTorchLightning/pytorch-lightning/pull/1705))
+
 ### Deprecated
 
 ### Removed
