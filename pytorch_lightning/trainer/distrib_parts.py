@@ -343,7 +343,7 @@ from abc import ABC, abstractmethod
 import time
 import random
 import torch
-from typing import Union
+from typing import Union, Any
 
 from pytorch_lightning import _logger as log
 from pytorch_lightning.loggers import LightningLoggerBase
@@ -434,29 +434,26 @@ class TrainerDPMixin(ABC):
             m.tpu_global_core_rank = self.tpu_global_core_rank
 
     def transfer_batch_to_tpu(self, batch):
-        return self.__transfer_data_to_device(batch, device='tpu')
+        device = xm.xla_device() if XLA_AVAILABLE else torch.device('cpu')
+        return self.__transfer_data_to_device(batch, device)
 
     def transfer_batch_to_gpu(self, batch, gpu_id):
-        return self.__transfer_data_to_device(batch, device='gpu', gpu_id=gpu_id)
+        device = torch.device('cuda', gpu_id)
+        return self.__transfer_data_to_device(batch, device)
 
-    def __transfer_data_to_device(self, batch, device, gpu_id=None):
-        if device == 'tpu' and XLA_AVAILABLE:
-            # base case: object can be directly moved using `to`
-            if callable(getattr(batch, 'to', None)):
-                return batch.to(xm.xla_device())
+    def __transfer_data_to_device(self, batch: Any, device: torch.device):
 
-        if device == 'gpu':
-            # base case: object can be directly moved using `cuda` or `to`
-            if callable(getattr(batch, 'cuda', None)):
-                return batch.cuda(gpu_id)
+        if self.is_overriden('transfer_batch_to_device'):
+            return self.get_model().transfer_batch_to_device(batch, device)
 
-            if callable(getattr(batch, 'to', None)):
-                return batch.to(torch.device('cuda', gpu_id))
+        # base case: object can be directly moved using `to`
+        if callable(getattr(batch, 'to', None)):
+            return batch.to(device)
 
         # when list
         if isinstance(batch, list):
             for i, x in enumerate(batch):
-                batch[i] = self.__transfer_data_to_device(x, device, gpu_id)
+                batch[i] = self.__transfer_data_to_device(x, device)
             return batch
 
         # when tuple
@@ -464,17 +461,17 @@ class TrainerDPMixin(ABC):
             # when namedtuple
             if hasattr(batch, '_fields'):
                 elem_type = type(batch)
-                return elem_type(*(self.__transfer_data_to_device(x, device, gpu_id) for x in batch))
+                return elem_type(*(self.__transfer_data_to_device(x, device) for x in batch))
             else:
                 batch = list(batch)
                 for i, x in enumerate(batch):
-                    batch[i] = self.__transfer_data_to_device(x, device, gpu_id)
+                    batch[i] = self.__transfer_data_to_device(x, device)
                 return tuple(batch)
 
         # when dict
         if isinstance(batch, dict):
             for k, v in batch.items():
-                batch[k] = self.__transfer_data_to_device(v, device, gpu_id)
+                batch[k] = self.__transfer_data_to_device(v, device)
 
             return batch
 
