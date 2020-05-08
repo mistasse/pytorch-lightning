@@ -670,7 +670,7 @@ class Trainer(
     def progress_bar_dict(self) -> dict:
         """ Read-only for progress bar metrics. """
         ref_model = self.model if not self.data_parallel else self.model.module
-        return dict(**ref_model.get_progress_bar_dict(), **self.progress_bar_metrics)
+        return {**ref_model.get_progress_bar_dict(), **self.progress_bar_metrics}
 
     # -----------------------------
     # MODEL TRAINING
